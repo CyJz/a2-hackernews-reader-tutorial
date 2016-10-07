@@ -48,16 +48,15 @@ Add bootstrap styling to `index.html`, we are using bootstrap to help us here, b
 Edit src/app.ts, change
 ```typescript
 template: `
-<div>
-  <h2>Hello {{name}}</h2>
-
-</div>
+  <div>
+    <h2>Hello {{name}}</h2>
+  </div>
 `,
 ```
 to
 ```typescript
 template: `
-<h1>{{title}}</h1>
+  <h1>{{title}}</h1>
 `,
 ```
 
@@ -72,30 +71,36 @@ export class App {
 to
 ```typescript
 export class App {
-  constructor() {}
-
-  title = 'Hacker News';
+  constructor() {
+    this.title = 'Hacker News';
+  }
 }
 ```
 
 The final file should look like this,
 ```typescript
 //our root app component
-import {Component} from 'angular2/core'
+import {Component, NgModule} from '@angular/core'
+import {BrowserModule} from '@angular/platform-browser'
 
 @Component({
   selector: 'my-app',
-  providers: [],
   template: `
     <h1>{{title}}</h1>
   `,
-  directives: []
 })
 export class App {
   constructor() {}
 
   title = 'Hacker News';
 }
+
+@NgModule({
+  imports: [ BrowserModule ],
+  declarations: [ App ],
+  bootstrap: [ App ]
+})
+export class AppModule {}
 ```
 
 <a name="mock-data"></a>
@@ -103,9 +108,6 @@ export class App {
 Lets add some mock data into our app.
 ```typescript
 export class App {
-  constructor() {}
-
-  title = 'Hacker News';
   newsList = [
     {"title": "Recreating Daft Punk's Da Funk with Overtone and Leipzig",
     "url": "http://overtone-recipes.github.io/remake/2016/04/03/recreating-da-funk.html"},
@@ -118,18 +120,22 @@ export class App {
     {"title": "The Silicon Valley of Transylvania",
     "url": "http://techcrunch.com/2016/04/06/the-silicon-valley-of-transylvania/"}
   ];
+  
+  constructor() {
+    this.title = 'Hacker News';
+  }
 }
 ```
 
 And show it in the template.
 ```typescript
 template: `
-<h1 class="title">{{title}}</h1>
-<ul class="list-group">
-  <li *ngFor="#newsItem of newsList; #i = index" class="list-group-item">
-    {{i+1}}. <a href="{{ newsItem.url }}" target="_blank"> {{ newsItem.title }}</a>
-  </li>
-</ul>
+  <h1 class="title">{{title}}</h1>
+  <ul class="list-group">
+    <li *ngFor="let newsItem of newsList; let i = index" class="list-group-item">
+      {{i+1}}. <a href="{{ newsItem.url }}" target="_blank"> {{ newsItem.title }}</a>
+    </li>
+  </ul>
 `,
 ```
 
@@ -151,15 +157,15 @@ styles:[`
 By the end of this section, our code looks like
 ```typescript
 //our root app component
-import {Component} from 'angular2/core'
+import {Component, NgModule} from '@angular/core'
+import {BrowserModule} from '@angular/platform-browser'
 
 @Component({
   selector: 'my-app',
-  providers: [],
   template: `
     <h1 class="title">{{title}}</h1>
     <ul class="list-group">
-      <li *ngFor="#newsItem of newsList; #i = index" class="list-group-item">
+      <li *ngFor="let newsItem of newsList; let i = index" class="list-group-item">
         {{i+1}}. <a href="{{ newsItem.url }}" target="_blank"> {{ newsItem.title }}</a>
       </li>
     </ul>
@@ -174,13 +180,9 @@ import {Component} from 'angular2/core'
       padding-bottom: 10px;
       text-align: center;
     }
-  `],
-  directives: []
+`]
 })
 export class App {
-  constructor() {}
-
-  title = 'Hacker News';
   newsList = [
     {"title": "Recreating Daft Punk's Da Funk with Overtone and Leipzig",
     "url": "http://overtone-recipes.github.io/remake/2016/04/03/recreating-da-funk.html"},
@@ -193,7 +195,18 @@ export class App {
     {"title": "The Silicon Valley of Transylvania",
     "url": "http://techcrunch.com/2016/04/06/the-silicon-valley-of-transylvania/"}
   ];
+  
+  constructor() {
+    this.title = 'Hacker News';
+  }
 }
+
+@NgModule({
+  imports: [ BrowserModule ],
+  declarations: [ App ],
+  bootstrap: [ App ]
+})
+export class AppModule {}}
 ```
 
 <a name="multiple-components"></a>
@@ -204,14 +217,11 @@ Create these 3 new files, `src/news-list.component.ts`, `src/news-list.component
 
 src/news-list.component.ts
 ```typescript
-import {Component} from 'angular2/core';
-
-import {NewsItemComponent} from './news-item.component';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'hacker-news-list',
-  templateUrl: 'src/news-list.component.html',
-  directives: [NewsItemComponent]
+  templateUrl: 'src/news-list.component.html'
 })
 export class NewsListComponent {
   constructor () {}
@@ -235,7 +245,7 @@ src/news-list.component.html
 ```html
 <div class="container">
   <ul class="list-group">
-    <li *ngFor="#newsItem of newsList; #i = index" class="list-group-item">
+    <li *ngFor="let newsItem of newsList; let i = index" class="list-group-item">
       {{i+1}}. <news-item [newsItem]="newsItem"></news-item>
     </li>
   </ul>
@@ -244,7 +254,7 @@ src/news-list.component.html
 
 src/news-item.component.ts
 ```typescript
-import {Component, Input} from 'angular2/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'news-item',
@@ -260,13 +270,14 @@ export class NewsItemComponent {
 Update src/app.ts
 ```typescript
 //our root app component
-import {Component} from 'angular2/core'
+import {Component, NgModule} from '@angular/core'
+import {BrowserModule} from '@angular/platform-browser'
 
 import {NewsListComponent} from './news-list.component';
+import {NewsItemComponent} from './news-item.component';
 
 @Component({
   selector: 'my-app',
-  providers: [],
   template: `
     <h1 class="title">{{title}}</h1>
     <hacker-news-list></hacker-news-list>
@@ -281,33 +292,38 @@ import {NewsListComponent} from './news-list.component';
       padding-bottom: 10px;
       text-align: center;
     }
-  `],
-  directives: [NewsListComponent]
+  `]
 })
-export class App {
-  constructor() {}
-
-  title = 'Hacker News';
+export class AppComponent {
+  constructor() {
+    this.title = 'Hacker News';
+  }
 }
+
+@NgModule({
+  imports: [ BrowserModule ],
+  declarations: [
+    AppComponent,
+    NewsListComponent,
+    NewsItemComponent,
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule {}
 ```
 
 <a name="retrieve-data"></a>
 ## Retrieve actual hackernews data
 Retrieve from actual server, need to use http ajax
 
-add to `src\main.ts`, a requirement to use angular2's http library
-```typescript
-// Add all operators to Observable
-import 'rxjs/Rx';
-```
-
-Then we are going to create a service for it  
+Let us create a service file for it
 
 Create `src/news-list.service.ts`
 ```typescript
-import {Injectable}     from 'angular2/core';
-import {Http, Response} from 'angular2/http';
-import {Observable}     from 'rxjs/Observable';
+import {Injectable} from '@angular/core';
+import {Http}       from '@angular/http';
+
+import 'rxjs/add/operator/toPromise';
 
 @Injectable()
 export class NewsListService {
@@ -356,7 +372,7 @@ export class NewsListService {
 
 add 2 imports to `src\app.ts`  
 ```typescript
-import {HTTP_PROVIDERS} from 'angular2/http';
+import {HttpModule}    from '@angular/http';
 import {NewsListService} from './news-list.service';
 ```
 
