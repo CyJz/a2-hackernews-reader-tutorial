@@ -294,7 +294,7 @@ import {NewsItemComponent} from './news-item.component';
     }
   `]
 })
-export class AppComponent {
+export class App {
   constructor() {
     this.title = 'Hacker News';
   }
@@ -303,11 +303,11 @@ export class AppComponent {
 @NgModule({
   imports: [ BrowserModule ],
   declarations: [
-    AppComponent,
+    App,
     NewsListComponent,
     NewsItemComponent,
   ],
-  bootstrap: [ AppComponent ]
+  bootstrap: [ App ]
 })
 export class AppModule {}
 ```
@@ -384,14 +384,14 @@ and modify NgModule decorator to
     HttpModule
   ],
   declarations: [
-    AppComponent,
+    App,
     NewsListComponent,
     NewsItemComponent,
   ],
   providers: [
     NewsListService,
   ],
-  bootstrap: [ AppComponent ]
+  bootstrap: [ App ]
 })
 ```
 
@@ -502,7 +502,7 @@ import 'rxjs/add/operator/toPromise';
     }
   `]
 })
-export class AppComponent {
+export class App {
   constructor() {
     this.title = 'Hacker News';
   }
@@ -515,14 +515,14 @@ export class AppComponent {
     routing
   ],
   declarations: [
-    AppComponent,
+    App,
     NewsListComponent,
     NewsItemComponent,
   ],
   providers: [
     NewsListService,
   ],
-  bootstrap: [ AppComponent ]
+  bootstrap: [ App ]
 })
 export class AppModule {}
 ```
