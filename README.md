@@ -2,7 +2,7 @@
 
 In this tutorial, our main objective is to learn the basic building blocks of Angular 2 by building a hackernews reader app.
 
-What our end product looks like: https://plnkr.co/edit/ntu86TQogua6crAKkaN7?p=preview
+What our end product looks like: https://plnkr.co/edit/vLKpMGRiVDwCmm7LPZmj?p=preview
 
 - [Getting our online editor ready](#editor)
 - [Hello Angular2](#hello-angular2)
