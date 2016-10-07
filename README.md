@@ -430,106 +430,136 @@ export class NewsListComponent implements OnInit {
 
 <a name="routing"></a>
 ## Create pagination for our hackernews reader (Routing)
-Add angular 2 routing library to our `index.html` (not all app requires routing, hence router library is an optional module library)
+In `index.html`, replace 
 ```html
-<script src="https://code.angularjs.org/2.0.0-beta.8/router.dev.js"></script>
+<base href="." />
+```
+with
+```html
+<script>document.write('<base href="' + document.location + '" />');</script>    
 ```
 
-and at just below the `<head>` tag on top of `index.html`, add
-```html
-<head> <!-- Dont add this line -->
-  <!-- Set the base href -->
-  <script>document.write('<base href="' + document.location + '" />');</script>    
-```
-
-Update `src\app.ts` to
+Then let us create our routing file `src/app.routing.ts`
 ```typescript
-import {Component} from 'angular2/core';
-import {HTTP_PROVIDERS} from 'angular2/http';
-import {RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS} from 'angular2/router';
-
-import {NewsListService} from './news-list.service';
+import { ModuleWithProviders }  from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
 
 import {NewsListComponent} from './news-list.component';
 
-@Component({
-    selector: 'my-app',
-    template: `
-      <h1 class="title">Hacker News</h1>
-      <router-outlet></router-outlet>
-    `,
-    styles:[`
-      .title {
-        color: white;
-        background-color: #ff6600;
-        margin-top: 0;
-        margin-bottom: 20px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        text-align: center;
-      }
-    `],
-    directives: [ROUTER_DIRECTIVES],
-    providers: [
-      NewsListService,
-      HTTP_PROVIDERS,
-      ROUTER_PROVIDERS
-    ]
-})
-@RouteConfig([
+const appRoutes: Routes = [
   {
-    path: '/news-list',
-    name: 'NewsList',
+    path: '',
+    redirectTo: '/news-list',
+    pathMatch: 'full'
+  },
+  {
+    path: 'news-list',
     component: NewsListComponent,
     useAsDefault: true
   },
   {
-    path: '/news-list/:page',
-    name: 'NewsListPage',
+    path: 'news-list/:page',
     component: NewsListComponent
   }
-])
-export class App { }
+];
+
+export const routing: ModuleWithProviders = RouterModule.forRoot(appRoutes);
+```
+
+
+
+Update `src\app.ts` to
+```typescript
+//our root app component
+import {Component, NgModule} from '@angular/core'
+import {BrowserModule} from '@angular/platform-browser'
+import {HttpModule}    from '@angular/http';
+
+import {NewsListComponent} from './news-list.component';
+import {NewsItemComponent} from './news-item.component';
+
+import {NewsListService} from './news-list.service';
+
+import { routing } from './app.routing';
+
+import 'rxjs/add/operator/toPromise';
+
+@Component({
+  selector: 'my-app',
+  template: `
+    <h1 class="title">{{title}}</h1>
+    <router-outlet></router-outlet>
+  `,
+  styles:[`
+    .title {
+      color: white;
+      background-color: #ff6600;
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+  `]
+})
+export class AppComponent {
+  constructor() {
+    this.title = 'Hacker News';
+  }
+}
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    HttpModule,
+    routing
+  ],
+  declarations: [
+    AppComponent,
+    NewsListComponent,
+    NewsItemComponent,
+  ],
+  providers: [
+    NewsListService,
+  ],
+  bootstrap: [ AppComponent ]
+})
+export class AppModule {}
 ```
 
 Update `src/news-list.component.ts`
 ```typescript
-import {Component, OnInit} from 'angular2/core';
-import {RouteParams, ROUTER_DIRECTIVES} from 'angular2/router';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Params} from '@angular/router';
 
 import {NewsListService} from './news-list.service';
 
-import {NewsItemComponent} from './news-item.component';
-
 @Component({
   selector: 'hacker-news-list',
-  templateUrl: 'src/news-list.component.html',
-  directives: [NewsItemComponent, ROUTER_DIRECTIVES]
+  templateUrl: 'src/news-list.component.html'
 })
 export class NewsListComponent implements OnInit {
   constructor (
     private _newsListService: NewsListService,
-    private _routeParams: RouteParams
+    private _route: ActivatedRoute
   ) {}
-
+  
   page;
   newsList;
-
+  
   ngOnInit() {
-    // get the page parameter and default to page 1 if not specified
-    this.page = +this._routeParams.get('page'); // + to cast the page param to number
-    this.page = (this.page == 0) ? this.page + 1 : this.page;
+    this._route.params.subscribe((params: Params) => {
+      let currentPage = +params['page']; // + to cast the page param to number
+      this.page = isNaN(currentPage) ? 1 : currentPage;
+    });
     
     this.getNewsList(this.page);
   }
-
+  
   getNewsList(page = 1) {
     this._newsListService.getNewsList(page)
                          .then(
-                           newsList => {
-                             console.log(newsList);
-                             this.newsList = newsList;
-                             },
+                           newsList => this.newsList = newsList,
                            error =>  this.errorMessage = <any>error
                           );
   }
@@ -540,15 +570,22 @@ In `src/news-list.component.html`, change `{{i+1}}` to `{{ (30* (page-1)) + i + 
 
 and add in a bootstrap pager to navigate between pages
 ```html
-<nav>
-  <ul class="pager">
-    <li [ngClass]="{disabled: page == 1}" class="previous"><a [routerLink]="['NewsListPage', {page: page - 1}]"><span aria-hidden="true">&larr;</span> Older</a></li>
-    <li class="next"><a [routerLink]="['NewsListPage', {page: page + 1}]">Newer <span aria-hidden="true">&rarr;</span></a></li>
-  </ul>
-</nav>
+  <nav>
+    <ul class="pager">
+      <li [ngClass]="{disabled: page == 1}" class="previous">
+        <a [routerLink]="['/news-list', (page - 1)]">
+          <span aria-hidden="true">&larr;</span> Older
+        </a>
+      </li>
+      <li class="next">
+        <a [routerLink]="['/news-list', (page + 1)]">
+          Newer <span aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 ```
 
-<a name="go-next"></a>
 ## That's all, where to go next
 - For further learning typescript, check out http://www.typescriptlang.org/docs/tutorial.html
 - For indepth Angular 2 learning, check out Angular 2 official website, https://angular.io/docs/ts/latest/
