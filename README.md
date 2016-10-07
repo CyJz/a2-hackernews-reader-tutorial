@@ -376,59 +376,48 @@ import {HttpModule}    from '@angular/http';
 import {NewsListService} from './news-list.service';
 ```
 
-and modify component decorator to
+and modify NgModule decorator to
 ```typescript
-@Component({
-  selector: 'my-app',
+@NgModule({
+  imports: [
+    BrowserModule,
+    HttpModule
+  ],
+  declarations: [
+    AppComponent,
+    NewsListComponent,
+    NewsItemComponent,
+  ],
   providers: [
     NewsListService,
-    HTTP_PROVIDERS
   ],
-  template: `
-    <h1 class="title">{{title}}</h1>
-    <hacker-news-list></hacker-news-list>
-  `,
-  styles:[`
-    .title {
-      color: white;
-      background-color: #ff6600;
-      margin-top: 0;
-      margin-bottom: 20px;
-      padding-top: 10px;
-      padding-bottom: 10px;
-      text-align: center;
-    }
-  `],
-  directives: [NewsListComponent]
+  bootstrap: [ AppComponent ]
 })
 ```
 
 Update `src/news-list.component.ts`
 ```typescript
-import {Component, OnInit} from 'angular2/core';
+import {Component, OnInit} from '@angular/core';
 
 import {NewsListService} from './news-list.service';
 
-import {NewsItemComponent} from './news-item.component';
-
 @Component({
   selector: 'hacker-news-list',
-  templateUrl: 'src/news-list.component.html',
-  directives: [NewsItemComponent]
+  templateUrl: 'src/news-list.component.html'
 })
 export class NewsListComponent implements OnInit {
   constructor (
     private _newsListService: NewsListService
   ) {}
-
+  
   page;
   newsList;
-
+  
   ngOnInit() {
     this.page = 1;
     this.getNewsList(this.page);
   }
-
+  
   getNewsList(page = 1) {
     this._newsListService.getNewsList(page)
                          .then(
