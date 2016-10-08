@@ -90,9 +90,9 @@ import {BrowserModule} from '@angular/platform-browser'
   `,
 })
 export class App {
-  constructor() {}
-
-  title = 'Hacker News';
+  constructor() {
+    this.title = 'Hacker News';
+  }
 }
 
 @NgModule({
